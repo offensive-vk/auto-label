@@ -4,12 +4,12 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --production
+RUN pnpm i --production
 
-RUN npx pnpm i --lockfile-only
+RUN pnpm i --lockfile-only
 
 COPY . .
 
-RUN npm run build
+RUN pnpm run bundle
 
 ENTRYPOINT ["node", "./dist/index.js"]

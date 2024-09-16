@@ -7,11 +7,11 @@ This GitHub Action allows you to automate labels on issues and pull requests in 
 ```yml
 steps:
   - uses: actions/checkout@v4
-  - name: Apply Labels on Issues
-    uses: offensive-vk/auto-label@master
+  - name: Apply Labels on PRs and Issues
+    uses: offensive-vk/auto-label@v5
     with:
-      token: ${{ github.token }}
-      labels: 
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      issue-config: labels.yml
 ```
 
 ## Inputs Configuration
@@ -23,11 +23,6 @@ Configure the inputs through the `with:` section of the Action. Below is a list 
 | token     | `${{ github.token }}` / `required` | The GitHub token used to authenticate requests. Use `${{ github.token }}` or create a PAT and store it in secrets. |
 | owner     | `github.context.repo.owner`   | The owner of the repository where the issue will be created. Inferred from the context. |
 | repo      | `github.context.repo.repo`    | The repository name where the issue will be created. Inferred from the context. |
-| title     | `required`                    | The title of the issue. |
-| body      |  `null`                              | The body content of the issue. |
-| milestone |        `null`                       | The milestone ID to associate the issue with. |
-| labels    |         `null`                      | A comma-separated list of labels to apply to the issue. |
-| assignees |         `${{ github.actor }}`                      | A comma-separated list of GitHub usernames to assign the issue to. |
 
 ## Usage
 

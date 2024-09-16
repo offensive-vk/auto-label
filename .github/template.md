@@ -1,4 +1,4 @@
-# Simple Issue Template
+# Simple Template
 
 ## Description
 
