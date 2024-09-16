@@ -23,79 +23,45 @@ function GetLabels<T extends Array<{ label: string, match: Array<string> }>>(lab
     return tempLabels.length > 0 ? tempLabels : undefined;
 }
 
-/**
- * Generate a random color in hex format (e.g., 'ff5733')
- */
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color.slice(1); // Remove '#' because GitHub expects the color without '#'
-}
-
-/**
- * Check if a label exists in the repository, if not, create it with a random color.
- */
-async function ensureLabelExists(octokit, owner, repo, label) {
-    try {
-        await octokit.rest.issues.getLabel({
-            owner,
-            repo,
-            name: label,
-        });
-        core.debug(`Label "${label}" already exists.`);
-    } catch (error) {
-        if (error.status === 404) {
-            const randomColor = getRandomColor();
-            core.debug(`Label "${label}" not found, creating it with color #${randomColor}.`);
-            await octokit.rest.issues.createLabel({
-                owner,
-                repo,
-                name: label,
-                color: randomColor,
-            });
-            core.info(`Label "${label}" created with color #${randomColor}.`);
-        } else {
-            throw error;
-        }
-    }
-}
-
 (async () => {
+
     try {
         const token = core.getInput('github-token', { required: true });
-        const octokit = github.getOctokit(token);
+        core.debug(`Using token: ${token}`);
 
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
+        core.debug(`Using owner: ${owner}`);
 
-        // Get the label configuration from action input
-        const labelConfigInput = core.getInput('label-config');
-        const labelMapping = labelConfigInput ? JSON.parse(labelConfigInput) : [];
-
+        // const labelMapping: Parameters<typeof GetLabels> = [
+        //     { label: 'ci/cd', match: ['ci/cd', 'pipeline', 'workflow', '.yml', 'dockerfile', '*.yml', '.github/workflows/*.yml', 'dockerfile', 'compose.yaml'] },
+        //     { label: 'template', match: ['.github/auto_pull_request.md', '.github/auto_issue_template.md'] },
+        //     { label: 'dotfiles', match: ['.gitlab-ci.yml', '.gitignore', '.gitattributes', '.dockerignore', 'dockerfile', 'license', 'package.json', 'pnpm-lock.yaml'] },
+        //     { label: 'markdown', match: ['markdown', '**/*.md', './**/*'] },
+        //     { label: 'devcontainer', match: ['.devcontainer/*', '*.json'] },
+        //     { label: 'secrets', match: ['**/*.mp3', '**/*.txt'] },
+        //     { label: 'enhancement', match: ['feature', 'improve', 'updated', 'update'] },
+        //     { label: 'question', match: ['?', 'question', 'please', 'help'] },
+        //     { label: 'schedule', match: ['schedule', 'daily', 'automate', 'hamster', 'ci', 'cd'] },
+        //     { label: 'boss', match: ['og', 'boss', 'admin', 'devops', 'final-boss'] },
+        //     { label: 'workflow', match: ['yaml', 'yml', 'config', 'yaml/**/*', '**/*.yml', '**/*.yaml', '.github/*.yml', '.github/workflows/*.yml'] }
+        // ];
+    
         let matched = false;
-        for (const { label, match } of labelMapping) {
+        labelMapping.forEach(({ label, match }) => {
             if (match.some(keyword => title.includes(keyword) || body.includes(keyword))) {
                 labels.push(label as never);
                 matched = true;
-
-                // Ensure the label exists in the repo, otherwise create it with a random color
-                await ensureLabelExists(octokit, owner, repo, label);
             }
-        }
-
+        });
+    
         if (!matched) {
             labels.push('unknown' as unknown as never);
-
-            // Ensure the 'unknown' label exists in the repo
-            await ensureLabelExists(octokit, owner, repo, 'unknown');
         }
-
+    
         if (labels.length > 0) {
-            await octokit.rest.issues.addLabels({
+            await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
@@ -105,7 +71,7 @@ async function ensureLabelExists(octokit, owner, repo, label) {
 
         console.log(`
             -------------------------------------------------
-            🎉 Success! Issue/PRs have been labeled successfully.
+            🎉 Success! Issue/PRs has been labeled successfully.
             Thank you for using this action! – Vedansh ✨
             -------------------------------------------------
         `);
