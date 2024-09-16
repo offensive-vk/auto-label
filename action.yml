@@ -1,0 +1,21 @@
+name: auto-label
+description: Automatically Apply Labels on Issues and PRs
+author: offensive-vk
+branding:
+  icon: mail
+  color: gray-dark
+
+runs:
+  using: node20
+  main: ./dist/index.js
+
+inputs:
+  github-token:
+    description: "Your GitHub token (PAT or `github.token`). Required to authenticate API requests."
+    required: false
+  repo:
+    description: "The target repository for the issue. If not specified, the current repository is used."
+    required: false
+  labels:
+    description: "A comma-separated list of labels to apply to the issue (e.g., 'bug,aws'). Optional."
+    required: false
