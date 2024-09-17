@@ -1,4 +1,4 @@
-name: Deploy to GitHub Container Registry
+name: CI / Deploy to GHCR
 
 on:
   push:
@@ -37,6 +37,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
       - name: Verify Tags and Labels
         run: |
           echo "Tags: ${{ steps.meta.outputs.tags }}" 
