@@ -14,7 +14,7 @@ RUN pnpm i --lockfile-only
 
 COPY . .
 
-RUN pnpm run build
+RUN pnpm run bundle
 
 ENTRYPOINT ["node", "./dist/index.js"]
 

@@ -2,12 +2,13 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
+import { stringify } from 'querystring';
 
 const context = github.context;
-const issue = context.issue;
-const labels: string[] = [];
-const title = issue.title.toLowerCase();
-const body = issue.body ? issue.body.toLowerCase() : '';
+const issue = context.payload.issue || context.payload.pull_request;
+const title = issue?.title ? issue.title.toLowerCase() : '';
+const body = issue?.body ? issue.body.toLowerCase() : '';
+
 
 function GetLabels<T extends Array<{ label: string, match: Array<string> }>>(labels: T): Array<T> | undefined {
     const tempLabels: Array<T> = [];
@@ -28,7 +29,7 @@ function getRandomColor() {
     return color.slice(1);
 }
 
-async function ensureLabelExists(octokit, owner, repo, label) {
+async function ensureLabelExists(octokit: any, owner: string, repo: string, label: string) {
     try {
         await octokit.rest.issues.getLabel({
             owner,
@@ -36,7 +37,7 @@ async function ensureLabelExists(octokit, owner, repo, label) {
             name: label,
         });
         core.debug(`Label "${label}" already exists.`);
-    } catch (error) {
+    } catch (error: any) {
         if (error.status === 404) {
             const randomColor = getRandomColor();
             core.debug(`Label "${label}" not found, creating it with color #${randomColor}.`);
@@ -53,7 +54,7 @@ async function ensureLabelExists(octokit, owner, repo, label) {
     }
 }
 
-function parseConfigFile(filePath) {
+function parseConfigFile(filePath: string) {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     if (filePath.endsWith('.yml') || filePath.endsWith('.yaml')) {
         return yaml.load(fileContent);
@@ -67,7 +68,7 @@ function parseConfigFile(filePath) {
     try {
         const token = core.getInput('github-token', { required: true });
         const octokit = github.getOctokit(token);
-
+        const labels: Array<string> = [];
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
@@ -80,9 +81,8 @@ function parseConfigFile(filePath) {
         const prLabelMapping = prConfigPath ? parseConfigFile(prConfigPath) : [];
 
         let matched = false;
-
         for (const { label, match } of issueLabelMapping) {
-            if (match.some(keyword => title.includes(keyword) || body.includes(keyword))) {
+            if (match.some((keyword: string) => title.includes(keyword) || body.includes(keyword))) {
                 labels.push(label);
                 matched = true;
                 await ensureLabelExists(octokit, owner, repo, label);
@@ -98,7 +98,7 @@ function parseConfigFile(filePath) {
             await octokit.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue.number,  // Fixed issue reference
+                issue_number: context.issue.number,
                 labels: labels,
             });
         }
@@ -110,7 +110,7 @@ function parseConfigFile(filePath) {
             -------------------------------------------------
         `);
 
-    } catch (error) {
+    } catch (error: any) {
         core.error(error);
         core.setFailed(`Failed to label pr or issue: ${error.message}`);
     }
