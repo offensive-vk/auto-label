@@ -11,8 +11,8 @@ steps:
     uses: offensive-vk/auto-label@v5
     with:
       github-token: ${{ secrets.GITHUB_TOKEN }}
-      issue-config: labels.yml
-      pr-config: 
+      issue-config: .github/labels.yml
+      pr-config: .github/labeler.yml
 ```
 
 ## Inputs Configuration

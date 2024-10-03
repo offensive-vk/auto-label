@@ -11,9 +11,9 @@ inputs:
   create-labels:
     description: "Set to true if the labels does not exist in the repository. If set to false, the action will not create the labels."
     required: false
-    default: true
+    default: 'true'
   issue-config:
-    description: "Path to file where each label maps to an array of matching strings. File type: .yml, .yaml, .json. Content : (e.g., '{\"bug\": [\"error\", \"failure\"], \"feature\": [\"request\", \"enhancement\"]}')."
+    description: "Path to file where each label maps to an array of matching strings. File type: .yml, .yaml, .json."
     required: true
   pr-config:
     description: "Path to file for labeling pull request based on file changes. Like labeler.yml in @actions/labeler."

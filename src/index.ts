@@ -1,8 +1,6 @@
-// @ts-nocheck
-const github = require('@actions/github');
-const core = require('@actions/core');
-const fs = require('fs');
-const yaml = require('js-yaml'); // To handle YAML files
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import * as yaml from 'js-yaml';
 
 const context = github.context;
 const issue = context.payload.issue;
@@ -88,6 +86,7 @@ function parseConfigFile(filePath) {
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
+        const createLabels = core.getInput('create-labels') == 'true';
 
         // Get file paths for the issue and PR config files from action inputs
         const issueConfigPath = core.getInput('issue-config');
@@ -138,5 +137,4 @@ function parseConfigFile(filePath) {
         core.error(error);
         core.setFailed(`Failed to label pr or issue: ${error.message}`);
     }
-
 })();
