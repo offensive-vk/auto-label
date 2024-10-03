@@ -11,7 +11,8 @@ steps:
     uses: offensive-vk/auto-label@v5
     with:
       github-token: ${{ secrets.GITHUB_TOKEN }}
-      issue-config: labels.yml
+      issue-config: .github/labels.yml
+      pr-config: .github/labeler.yml
 ```
 
 ## Inputs Configuration
@@ -21,13 +22,9 @@ Configure the inputs through the `with:` section of the Action. Below is a list 
 | Option    | Default Value                 | Description |
 |-----------|-------------------------------|-------------|
 | token     | `${{ github.token }}` / `required` | The GitHub token used to authenticate requests. Use `${{ github.token }}` or create a PAT and store it in secrets. |
-| owner     | `github.context.repo.owner`   | The owner of the repository where the issue will be created. Inferred from the context. |
-| repo      | `github.context.repo.repo`    | The repository name where the issue will be created. Inferred from the context. |
+| issue-config | `.github/issues.yml` / `required` | The Issues Config File that will label issues. |
+| pr-config | `.github/pr.yml` | The Pull Request Labeler Config. (Similiar to `labeler.yml`) | 
 
-## Usage
-
-> [!NOTE]  
-> This Action only supports `ubuntu-latest` runners.
 
 ***
 
