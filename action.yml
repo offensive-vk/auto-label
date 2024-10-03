@@ -1,4 +1,4 @@
-name: auto-label
+name: auto-label-stuff
 description: Super Easy Action to Automatically Apply Labels on Issues and PRs
 author: offensive-vk
 branding:
@@ -8,6 +8,7 @@ inputs:
   github-token:
     description: "Your GitHub token (PAT or `github.token`). Required to authenticate API requests."
     required: false
+    default: ${{ secrets.GITHUB_TOKEN }}
   create-labels:
     description: "Set to true if the labels does not exist in the repository. If set to false, the action will not create the labels."
     required: false
