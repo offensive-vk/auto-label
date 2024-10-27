@@ -14,7 +14,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies using pnpm with only lockfile generation
-RUN pnpm install --lockfile-only
+RUN pnpm install
 
 # Copy the remaining project files into the container
 COPY . .
