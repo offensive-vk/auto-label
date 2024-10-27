@@ -19,8 +19,8 @@ inputs:
     default: '.github/issues.yml'
   pr-config:
     description: "Path to file for labeling pull request based on file changes. Like labeler.yml in @actions/labeler."
-    required: true
+    required: false
     default: '.github/pr.yml'
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: './Dockerfile'
