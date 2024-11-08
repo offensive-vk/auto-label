@@ -28,7 +28,7 @@ jobs:
       uses: ./
       with:
         create-labels: true
-        github-token: ${{ secrets.BOT_TOKEN || secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.BOT_TOKEN }}
         issue-config: '.github/issues.yml'
   # label_pull_requests:
   #   runs-on: ubuntu-latest

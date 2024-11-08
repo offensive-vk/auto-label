@@ -1,3 +1,13 @@
+/******************************************************/
+/**
+ * @author Vedansh (offensive-vk)
+ * @url https://github.com/offensive-vk/auto-label/
+ * @lang TypeScript + Node.js
+ * @type Github Action for Creating PRs.
+ * @uses Octokit and Actions Core
+ * @runs Nodejs v20.x
+ */
+/******************************************************/
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import * as yaml from 'js-yaml';
@@ -49,7 +59,7 @@ async function ensureLabelExists(octokit: any, owner: string, repo: string, labe
             });
             core.info(`Label "${label}" created with color #${randomColor}.`);
         } else {
-            throw error;
+            core.error(error);
         }
     }
 }
@@ -115,3 +125,13 @@ function parseConfigFile(filePath: string) {
         core.setFailed(`Failed to label pr or issue: ${error.message}`);
     }
 })();
+/******************************************************/
+/**
+ * @author Vedansh (offensive-vk)
+ * @url https://github.com/offensive-vk/auto-label/
+ * @lang TypeScript + Node.js
+ * @type Github Action for Creating PRs.
+ * @uses Octokit and Actions Core
+ * @runs Nodejs v20.x
+ */
+/******************************************************/
