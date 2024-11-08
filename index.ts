@@ -3,7 +3,7 @@
  * @author Vedansh (offensive-vk)
  * @url https://github.com/offensive-vk/auto-label/
  * @lang TypeScript + Node.js
- * @type Github Action for Creating PRs.
+ * @type Github Action for Issue and PR Labels.
  * @uses Octokit and Actions Core
  * @runs Nodejs v20.x
  */
@@ -76,7 +76,7 @@ function parseConfigFile(filePath: string) {
 
 (async () => {
     try {
-        const token = core.getInput('github-token', { required: true });
+        const token = core.getInput('github-token');
         const octokit = github.getOctokit(token);
         const labels: Array<string> = [];
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
@@ -130,7 +130,7 @@ function parseConfigFile(filePath: string) {
  * @author Vedansh (offensive-vk)
  * @url https://github.com/offensive-vk/auto-label/
  * @lang TypeScript + Node.js
- * @type Github Action for Creating PRs.
+ * @type Github Action for Issue and PR Labels.
  * @uses Octokit and Actions Core
  * @runs Nodejs v20.x
  */
