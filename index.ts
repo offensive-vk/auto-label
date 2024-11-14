@@ -137,4 +137,4 @@ function parseConfigFile(filePath: string): Array<LabelConfig> {
     }
 })();
 
-/**Good luck! */
+/* Good luck on re-writing this from scratch. */
