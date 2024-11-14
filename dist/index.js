@@ -27146,10 +27146,10 @@ function parseConfigFile(filePath) {
   } else {
     throw new Error(`Unsupported file type: ${filePath}`);
   }
-  if (Array.isArray(parsedData)) {
-    return parsedData;
+  if (typeof parsedData === "object" && parsedData !== null) {
+    return Object.values(parsedData).flat();
   } else {
-    throw new Error(`Parsed data from ${filePath} is not an array.`);
+    throw new Error(`Parsed data from ${filePath} is not an object or is empty.`);
   }
 }
 (async () => {

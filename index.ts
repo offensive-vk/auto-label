@@ -73,10 +73,12 @@ function parseConfigFile(filePath: string): Array<{ label: string; match: Array<
     } else {
         throw new Error(`Unsupported file type: ${filePath}`);
     }
-    if (Array.isArray(parsedData)) {
-        return parsedData as Array<{ label: string; match: Array<string>}>;
+
+    if (typeof parsedData === 'object' && parsedData !== null) {
+        // Flatten dictionary to an array
+        return Object.values(parsedData).flat() as Array<{ label: string; match: Array<string> }>;
     } else {
-        throw new Error(`Parsed data from ${filePath} is not an array.`);
+        throw new Error(`Parsed data from ${filePath} is not an object or is empty.`);
     }
 }
 
