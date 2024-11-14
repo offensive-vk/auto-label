@@ -3,7 +3,7 @@
  * @author Vedansh (offensive-vk)
  * @url https://github.com/offensive-vk/auto-label/
  * @lang TypeScript + Node.js
- * @type Github Action for Issue and PR Labels.
+ * @type Github Action for Applying Labels on Issue and PR.
  * @uses Octokit and Actions Core
  * @runs Nodejs v20.x
  */
@@ -12,7 +12,6 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
-import { stringify } from 'querystring';
 
 const context = github.context;
 const issue = context.payload.issue || context.payload.pull_request;
@@ -20,11 +19,11 @@ const title = issue?.title ? issue.title.toLowerCase() : '';
 const body = issue?.body ? issue.body.toLowerCase() : '';
 
 
-function GetLabels<T extends Array<{ label: string, match: Array<string> }>>(labels: T): Array<T> | undefined {
-    const tempLabels: Array<T> = [];
+function GetLabels<T extends { label: string; match: Array<string> }>(labels: Array<T>): Array<string> | undefined {
+    const tempLabels: Array<string> = [];
     labels.forEach(({ label, match }) => {
         if (match.some(keyword => title.includes(keyword) || body.includes(keyword))) {
-            tempLabels.push({ label, match } as unknown as T);
+            tempLabels.push(label);
         }
     });
     return tempLabels.length > 0 ? tempLabels : undefined;
@@ -87,30 +86,29 @@ function parseConfigFile(filePath: string) {
         const issueConfigPath = core.getInput('issue-config');
         const prConfigPath = core.getInput('pr-config');
 
-        const issueLabelMapping = parseConfigFile(issueConfigPath) || [];
+        const issueLabelMapping = issueConfigPath ? parseConfigFile(issueConfigPath) : [];
         const prLabelMapping = prConfigPath ? parseConfigFile(prConfigPath) : [];
 
-        let matched = false;
-        for (const { label, match } of issueLabelMapping) {
-            if (match.some((keyword: string) => title.includes(keyword) || body.includes(keyword))) {
+        const matchedLabels = GetLabels(issueLabelMapping);
+        if (matchedLabels) {
+            for (const label of matchedLabels) {
                 labels.push(label);
-                matched = true;
                 await ensureLabelExists(octokit, owner, repo, label);
             }
-        }
-
-        if (!matched) {
+        } else {
             labels.push('unknown');
             await ensureLabelExists(octokit, owner, repo, 'unknown');
         }
 
-        if (labels.length > 0) {
+        if (context.issue?.number && labels.length > 0) {
             await octokit.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner,
+                repo,
                 issue_number: context.issue.number,
                 labels: labels,
             });
+        } else {
+            core.warning("No issue or PR number found in the context.");
         }
 
         console.log(`
@@ -121,17 +119,7 @@ function parseConfigFile(filePath: string) {
         `);
 
     } catch (error: any) {
-        core.error(error);
-        core.setFailed(`Failed to label pr or issue: ${error.message}`);
+        console.dir(error);
+        core.setFailed(`Failed to label PR or issue: ${error.message}`);
     }
 })();
-/******************************************************/
-/**
- * @author Vedansh (offensive-vk)
- * @url https://github.com/offensive-vk/auto-label/
- * @lang TypeScript + Node.js
- * @type Github Action for Issue and PR Labels.
- * @uses Octokit and Actions Core
- * @runs Nodejs v20.x
- */
-/******************************************************/
