@@ -27937,7 +27937,6 @@ async function ensureLabelExists(octokit, owner, repo, label, description) {
         name: label,
         color: randomColor,
         description: description || ""
-        // Set description if provided
       });
       core2.info(`Label "${label}" created with color #${randomColor} and description "${description}".`);
     } else {
@@ -28000,6 +27999,7 @@ function parseConfigFile(filePath) {
             -------------------------------------------------
         `);
   } catch (error2) {
+    console.dir(error2);
     core2.setFailed(`Failed to label PR or issue: ${error2.message}`);
   }
 })();
