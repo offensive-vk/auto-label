@@ -63,14 +63,21 @@ async function ensureLabelExists(octokit: any, owner: string, repo: string, labe
     }
 }
 
-function parseConfigFile(filePath: string) {
+function parseConfigFile(filePath: string): Array<{ label: string; match: Array<string> }> {
     const fileContent = fs.readFileSync(filePath, 'utf8');
+    let parsedData;
     if (filePath.endsWith('.yml') || filePath.endsWith('.yaml')) {
-        return yaml.load(fileContent);
+        parsedData = yaml.load(fileContent);
     } else if (filePath.endsWith('.json')) {
-        return JSON.parse(fileContent);
+        parsedData = JSON.parse(fileContent);
+    } else {
+        throw new Error(`Unsupported file type: ${filePath}`);
     }
-    throw new Error(`Unsupported file type: ${filePath}`);
+    if (Array.isArray(parsedData)) {
+        return parsedData as Array<{ label: string; match: Array<string>}>;
+    } else {
+        throw new Error(`Parsed data from ${filePath} is not an array.`);
+    }
 }
 
 (async () => {
@@ -81,7 +88,7 @@ function parseConfigFile(filePath: string) {
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
-        const createLabels = core.getInput('create-labels') == 'true';
+        const createLabels = core.getInput('create-labels') === 'true';
 
         const issueConfigPath = core.getInput('issue-config');
         const prConfigPath = core.getInput('pr-config');
@@ -119,7 +126,6 @@ function parseConfigFile(filePath: string) {
         `);
 
     } catch (error: any) {
-        console.dir(error);
         core.setFailed(`Failed to label PR or issue: ${error.message}`);
     }
 })();

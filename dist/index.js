@@ -27138,12 +27138,19 @@ async function ensureLabelExists(octokit, owner, repo, label) {
 }
 function parseConfigFile(filePath) {
   const fileContent = fs.readFileSync(filePath, "utf8");
+  let parsedData;
   if (filePath.endsWith(".yml") || filePath.endsWith(".yaml")) {
-    return load(fileContent);
+    parsedData = load(fileContent);
   } else if (filePath.endsWith(".json")) {
-    return JSON.parse(fileContent);
+    parsedData = JSON.parse(fileContent);
+  } else {
+    throw new Error(`Unsupported file type: ${filePath}`);
   }
-  throw new Error(`Unsupported file type: ${filePath}`);
+  if (Array.isArray(parsedData)) {
+    return parsedData;
+  } else {
+    throw new Error(`Parsed data from ${filePath} is not an array.`);
+  }
 }
 (async () => {
   try {
@@ -27153,7 +27160,7 @@ function parseConfigFile(filePath) {
     const { owner: contextOwner, repo: contextRepo } = github.context.repo;
     const owner = core2.getInput("owner") || contextOwner;
     const repo = core2.getInput("repo") || contextRepo;
-    const createLabels = core2.getInput("create-labels") == "true";
+    const createLabels = core2.getInput("create-labels") === "true";
     const issueConfigPath = core2.getInput("issue-config");
     const prConfigPath = core2.getInput("pr-config");
     const issueLabelMapping = issueConfigPath ? parseConfigFile(issueConfigPath) : [];
@@ -27185,7 +27192,6 @@ function parseConfigFile(filePath) {
             -------------------------------------------------
         `);
   } catch (error2) {
-    console.dir(error2);
     core2.setFailed(`Failed to label PR or issue: ${error2.message}`);
   }
 })();
