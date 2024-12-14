@@ -751,18 +751,18 @@ var require_tunnel = __commonJS({
             res.statusCode
           );
           socket.destroy();
-          var error2 = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
-          error2.code = "ECONNRESET";
-          options.request.emit("error", error2);
+          var error = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
+          error.code = "ECONNRESET";
+          options.request.emit("error", error);
           self.removeSocket(placeholder);
           return;
         }
         if (head.length > 0) {
           debug2("got illegal response body from proxy");
           socket.destroy();
-          var error2 = new Error("got illegal response body from proxy");
-          error2.code = "ECONNRESET";
-          options.request.emit("error", error2);
+          var error = new Error("got illegal response body from proxy");
+          error.code = "ECONNRESET";
+          options.request.emit("error", error);
           self.removeSocket(placeholder);
           return;
         }
@@ -777,9 +777,9 @@ var require_tunnel = __commonJS({
           cause.message,
           cause.stack
         );
-        var error2 = new Error("tunneling socket could not be established, cause=" + cause.message);
-        error2.code = "ECONNRESET";
-        options.request.emit("error", error2);
+        var error = new Error("tunneling socket could not be established, cause=" + cause.message);
+        error.code = "ECONNRESET";
+        options.request.emit("error", error);
         self.removeSocket(placeholder);
       }
     };
@@ -5900,7 +5900,7 @@ Content-Type: ${value.type || "application/octet-stream"}\r
         throw new TypeError("Body is unusable");
       }
       const promise = createDeferredPromise();
-      const errorSteps = (error2) => promise.reject(error2);
+      const errorSteps = (error) => promise.reject(error);
       const successSteps = (data) => {
         try {
           promise.resolve(convertBytesToJSValue(data));
@@ -6186,16 +6186,16 @@ var require_request = __commonJS({
           this.onError(err);
         }
       }
-      onError(error2) {
+      onError(error) {
         this.onFinally();
         if (channels.error.hasSubscribers) {
-          channels.error.publish({ request: this, error: error2 });
+          channels.error.publish({ request: this, error });
         }
         if (this.aborted) {
           return;
         }
         this.aborted = true;
-        return this[kHandler].onError(error2);
+        return this[kHandler].onError(error);
       }
       onFinally() {
         if (this.errorHandler) {
@@ -7058,8 +7058,8 @@ var require_RedirectHandler = __commonJS({
       onUpgrade(statusCode, headers, socket) {
         this.handler.onUpgrade(statusCode, headers, socket);
       }
-      onError(error2) {
-        this.handler.onError(error2);
+      onError(error) {
+        this.handler.onError(error);
       }
       onHeaders(statusCode, headers, resume, statusText) {
         this.location = this.history.length >= this.maxRedirections || util.isDisturbed(this.opts.body) ? null : parseLocation(statusCode, headers);
@@ -10801,13 +10801,13 @@ var require_mock_utils = __commonJS({
       if (mockDispatch2.data.callback) {
         mockDispatch2.data = { ...mockDispatch2.data, ...mockDispatch2.data.callback(opts) };
       }
-      const { data: { statusCode, data, headers, trailers, error: error2 }, delay, persist } = mockDispatch2;
+      const { data: { statusCode, data, headers, trailers, error }, delay, persist } = mockDispatch2;
       const { timesInvoked, times } = mockDispatch2;
       mockDispatch2.consumed = !persist && timesInvoked >= times;
       mockDispatch2.pending = timesInvoked < times;
-      if (error2 !== null) {
+      if (error !== null) {
         deleteMockDispatch(this[kDispatches], key);
-        handler.onError(error2);
+        handler.onError(error);
         return true;
       }
       if (typeof delay === "number" && delay > 0) {
@@ -10845,19 +10845,19 @@ var require_mock_utils = __commonJS({
         if (agent.isMockActive) {
           try {
             mockDispatch.call(this, opts, handler);
-          } catch (error2) {
-            if (error2 instanceof MockNotMatchedError) {
+          } catch (error) {
+            if (error instanceof MockNotMatchedError) {
               const netConnect = agent[kGetNetConnect]();
               if (netConnect === false) {
-                throw new MockNotMatchedError(`${error2.message}: subsequent request to origin ${origin} was not allowed (net.connect disabled)`);
+                throw new MockNotMatchedError(`${error.message}: subsequent request to origin ${origin} was not allowed (net.connect disabled)`);
               }
               if (checkNetConnect(netConnect, origin)) {
                 originalDispatch.call(this, opts, handler);
               } else {
-                throw new MockNotMatchedError(`${error2.message}: subsequent request to origin ${origin} was not allowed (net.connect is not enabled for this origin)`);
+                throw new MockNotMatchedError(`${error.message}: subsequent request to origin ${origin} was not allowed (net.connect is not enabled for this origin)`);
               }
             } else {
-              throw error2;
+              throw error;
             }
           }
         } else {
@@ -11020,11 +11020,11 @@ var require_mock_interceptor = __commonJS({
       /**
        * Mock an undici request with a defined error.
        */
-      replyWithError(error2) {
-        if (typeof error2 === "undefined") {
+      replyWithError(error) {
+        if (typeof error === "undefined") {
           throw new InvalidArgumentError("error must be defined");
         }
-        const newMockDispatch = addMockDispatch(this[kDispatches], this[kDispatchKey], { error: error2 });
+        const newMockDispatch = addMockDispatch(this[kDispatches], this[kDispatchKey], { error });
         return new MockScope(newMockDispatch);
       }
       /**
@@ -13347,17 +13347,17 @@ var require_fetch = __commonJS({
         this.emit("terminated", reason);
       }
       // https://fetch.spec.whatwg.org/#fetch-controller-abort
-      abort(error2) {
+      abort(error) {
         if (this.state !== "ongoing") {
           return;
         }
         this.state = "aborted";
-        if (!error2) {
-          error2 = new DOMException2("The operation was aborted.", "AbortError");
+        if (!error) {
+          error = new DOMException2("The operation was aborted.", "AbortError");
         }
-        this.serializedAbortReason = error2;
-        this.connection?.destroy(error2);
-        this.emit("terminated", error2);
+        this.serializedAbortReason = error;
+        this.connection?.destroy(error);
+        this.emit("terminated", error);
       }
     };
     function fetch(input, init = {}) {
@@ -13461,13 +13461,13 @@ var require_fetch = __commonJS({
         performance.markResourceTiming(timingInfo, originalURL.href, initiatorType, globalThis2, cacheState);
       }
     }
-    function abortFetch(p, request, responseObject, error2) {
-      if (!error2) {
-        error2 = new DOMException2("The operation was aborted.", "AbortError");
+    function abortFetch(p, request, responseObject, error) {
+      if (!error) {
+        error = new DOMException2("The operation was aborted.", "AbortError");
       }
-      p.reject(error2);
+      p.reject(error);
       if (request.body != null && isReadable(request.body?.stream)) {
-        request.body.stream.cancel(error2).catch((err) => {
+        request.body.stream.cancel(error).catch((err) => {
           if (err.code === "ERR_INVALID_STATE") {
             return;
           }
@@ -13479,7 +13479,7 @@ var require_fetch = __commonJS({
       }
       const response = responseObject[kState];
       if (response.body != null && isReadable(response.body?.stream)) {
-        response.body.stream.cancel(error2).catch((err) => {
+        response.body.stream.cancel(error).catch((err) => {
           if (err.code === "ERR_INVALID_STATE") {
             return;
           }
@@ -14259,13 +14259,13 @@ var require_fetch = __commonJS({
               fetchParams.controller.ended = true;
               this.body.push(null);
             },
-            onError(error2) {
+            onError(error) {
               if (this.abort) {
                 fetchParams.controller.off("terminated", this.abort);
               }
-              this.body?.destroy(error2);
-              fetchParams.controller.terminate(error2);
-              reject(error2);
+              this.body?.destroy(error);
+              fetchParams.controller.terminate(error);
+              reject(error);
             },
             onUpgrade(status, headersList, socket) {
               if (status !== 101) {
@@ -14731,8 +14731,8 @@ var require_util4 = __commonJS({
                   }
                   fr[kResult] = result;
                   fireAProgressEvent("load", fr);
-                } catch (error2) {
-                  fr[kError] = error2;
+                } catch (error) {
+                  fr[kError] = error;
                   fireAProgressEvent("error", fr);
                 }
                 if (fr[kState] !== "loading") {
@@ -14741,13 +14741,13 @@ var require_util4 = __commonJS({
               });
               break;
             }
-          } catch (error2) {
+          } catch (error) {
             if (fr[kAborted]) {
               return;
             }
             queueMicrotask(() => {
               fr[kState] = "done";
-              fr[kError] = error2;
+              fr[kError] = error;
               fireAProgressEvent("error", fr);
               if (fr[kState] !== "loading") {
                 fireAProgressEvent("loadend", fr);
@@ -16761,11 +16761,11 @@ var require_connection = __commonJS({
         });
       }
     }
-    function onSocketError(error2) {
+    function onSocketError(error) {
       const { ws } = this;
       ws[kReadyState] = states.CLOSING;
       if (channels.socketError.hasSubscribers) {
-        channels.socketError.publish(error2);
+        channels.socketError.publish(error);
       }
       this.destroy();
     }
@@ -18397,12 +18397,12 @@ var require_oidc_utils = __commonJS({
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
           const httpclient = _OidcClient.createHttpClient();
-          const res = yield httpclient.getJson(id_token_url).catch((error2) => {
+          const res = yield httpclient.getJson(id_token_url).catch((error) => {
             throw new Error(`Failed to get ID Token. 
  
-        Error Code : ${error2.statusCode}
+        Error Code : ${error.statusCode}
  
-        Error Message: ${error2.message}`);
+        Error Message: ${error.message}`);
           });
           const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
           if (!id_token) {
@@ -18423,8 +18423,8 @@ var require_oidc_utils = __commonJS({
             const id_token = yield _OidcClient.getCall(id_token_url);
             core_1.setSecret(id_token);
             return id_token;
-          } catch (error2) {
-            throw new Error(`Error message: ${error2.message}`);
+          } catch (error) {
+            throw new Error(`Error message: ${error.message}`);
           }
         });
       }
@@ -18909,7 +18909,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     exports2.setCommandEcho = setCommandEcho;
     function setFailed2(message) {
       process.exitCode = ExitCode.Failure;
-      error2(message);
+      error(message);
     }
     exports2.setFailed = setFailed2;
     function isDebug() {
@@ -18920,10 +18920,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("debug", {}, message);
     }
     exports2.debug = debug2;
-    function error2(message, properties = {}) {
+    function error(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports2.error = error2;
+    exports2.error = error;
     function warning2(message, properties = {}) {
       command_1.issueCommand("warning", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -19178,8 +19178,8 @@ var require_add = __commonJS({
       }
       if (kind === "error") {
         hook = function(method, options) {
-          return Promise.resolve().then(method.bind(null, options)).catch(function(error2) {
-            return orig(error2, options);
+          return Promise.resolve().then(method.bind(null, options)).catch(function(error) {
+            return orig(error, options);
           });
         };
       }
@@ -19857,21 +19857,21 @@ var require_tr46 = __commonJS({
         label = punycode.toUnicode(label);
         processing_option = PROCESSING_OPTIONS.NONTRANSITIONAL;
       }
-      var error2 = false;
+      var error = false;
       if (normalize(label) !== label || label[3] === "-" && label[4] === "-" || label[0] === "-" || label[label.length - 1] === "-" || label.indexOf(".") !== -1 || label.search(combiningMarksRegex) === 0) {
-        error2 = true;
+        error = true;
       }
       var len = countSymbols(label);
       for (var i = 0; i < len; ++i) {
         var status = findStatus(label.codePointAt(i));
         if (processing === PROCESSING_OPTIONS.TRANSITIONAL && status[1] !== "valid" || processing === PROCESSING_OPTIONS.NONTRANSITIONAL && status[1] !== "valid" && status[1] !== "deviation") {
-          error2 = true;
+          error = true;
           break;
         }
       }
       return {
         label,
-        error: error2
+        error
       };
     }
     function processing(domain_name, useSTD3, processing_option) {
@@ -21518,8 +21518,8 @@ var require_lib3 = __commonJS({
       this.timeout = timeout;
       if (body instanceof Stream) {
         body.on("error", function(err) {
-          const error2 = err.name === "AbortError" ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
-          _this[INTERNALS].error = error2;
+          const error = err.name === "AbortError" ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
+          _this[INTERNALS].error = error;
         });
       }
     }
@@ -22362,13 +22362,13 @@ var require_lib3 = __commonJS({
         const signal = request.signal;
         let response = null;
         const abort = function abort2() {
-          let error2 = new AbortError("The user aborted a request.");
-          reject(error2);
+          let error = new AbortError("The user aborted a request.");
+          reject(error);
           if (request.body && request.body instanceof Stream.Readable) {
-            destroyStream(request.body, error2);
+            destroyStream(request.body, error);
           }
           if (!response || !response.body) return;
-          response.body.emit("error", error2);
+          response.body.emit("error", error);
         };
         if (signal && signal.aborted) {
           abort();
@@ -22818,7 +22818,7 @@ var require_dist_node5 = __commonJS({
         }
         if (status >= 400) {
           const data = await getResponseData(response);
-          const error2 = new requestError.RequestError(toErrorMessage(data), status, {
+          const error = new requestError.RequestError(toErrorMessage(data), status, {
             response: {
               url,
               status,
@@ -22827,7 +22827,7 @@ var require_dist_node5 = __commonJS({
             },
             request: requestOptions
           });
-          throw error2;
+          throw error;
         }
         return getResponseData(response);
       }).then((data) => {
@@ -22837,9 +22837,9 @@ var require_dist_node5 = __commonJS({
           headers,
           data
         };
-      }).catch((error2) => {
-        if (error2 instanceof requestError.RequestError) throw error2;
-        throw new requestError.RequestError(error2.message, 500, {
+      }).catch((error) => {
+        if (error instanceof requestError.RequestError) throw error;
+        throw new requestError.RequestError(error.message, 500, {
           request: requestOptions
         });
       });
@@ -24343,8 +24343,8 @@ var require_dist_node10 = __commonJS({
               return {
                 value: normalizedResponse
               };
-            } catch (error2) {
-              if (error2.status !== 409) throw error2;
+            } catch (error) {
+              if (error.status !== 409) throw error;
               url = "";
               return {
                 value: {
@@ -28640,15 +28640,6 @@ async function getChangedFiles(octokit, owner, repo, prNumber) {
   });
   return files.map((file) => file.filename);
 }
-function GetFileLabels(files, labels) {
-  const matchedLabels = [];
-  labels.forEach(({ label, match: match2, description }) => {
-    if (match2.some((pattern) => files.some((file) => minimatch(file, pattern)))) {
-      matchedLabels.push({ label, description });
-    }
-  });
-  return matchedLabels.length > 0 ? matchedLabels : void 0;
-}
 function parseConfigFile(filePath) {
   const fileContent = fs.readFileSync(filePath, "utf8");
   let parsedData;
@@ -28670,16 +28661,12 @@ function parseConfigFile(filePath) {
 }
 async function ensureLabelExists(octokit, owner, repo, label, description) {
   try {
-    await octokit.rest.issues.getLabel({
-      owner,
-      repo,
-      name: label
-    });
+    await octokit.rest.issues.getLabel({ owner, repo, name: label });
     core2.debug(`Label "${label}" already exists.`);
-  } catch (error2) {
-    if (error2.status === 404) {
+  } catch (error) {
+    if (error.status === 404) {
       const randomColor = getRandomColor();
-      core2.debug(`Label "${label}" not found, creating it with color #${randomColor} and description "${description}".`);
+      core2.info(`Label "${label}" not found. Creating it with color #${randomColor} and description "${description}".`);
       await octokit.rest.issues.createLabel({
         owner,
         repo,
@@ -28687,9 +28674,9 @@ async function ensureLabelExists(octokit, owner, repo, label, description) {
         color: randomColor,
         description: description || ""
       });
-      core2.info(`Label "${label}" created with color #${randomColor} and description "${description}".`);
+      core2.info(`Label "${label}" created successfully.`);
     } else {
-      core2.error(error2);
+      throw error;
     }
   }
 }
@@ -28701,6 +28688,15 @@ function getRandomColor() {
   }
   return color.slice(1);
 }
+function getMatchedLabels(content, labels) {
+  const matchedLabels = [];
+  labels.forEach(({ label, match: match2, description }) => {
+    if (match2.some((pattern) => content.some((item) => minimatch(item, pattern)))) {
+      matchedLabels.push({ label, description });
+    }
+  });
+  return matchedLabels.length > 0 ? matchedLabels : void 0;
+}
 (async () => {
   try {
     const token = core2.getInput("github-token", { required: true });
@@ -28708,32 +28704,60 @@ function getRandomColor() {
     const { owner: contextOwner, repo: contextRepo } = github.context.repo;
     const owner = core2.getInput("owner") || contextOwner;
     const repo = core2.getInput("repo") || contextRepo;
-    const fileConfigPath = core2.getInput("pr-config") || core2.getInput("issue-config");
-    const fileLabelMapping = fileConfigPath ? parseConfigFile(fileConfigPath) : [];
-    const labels = [];
-    if (context2.payload.pull_request) {
+    const prConfigPath = core2.getInput("pr-config");
+    const issueConfigPath = core2.getInput("issue-config");
+    const eventType = context2.eventName;
+    const labelsToApply = [];
+    let targetNumber;
+    if (eventType === "pull_request" && context2.payload.pull_request) {
       const prNumber = context2.payload.pull_request.number;
+      targetNumber = prNumber;
+      if (!prConfigPath) {
+        core2.setFailed('Missing "pr-config" input for pull request labeling.');
+        return;
+      }
       const changedFiles = await getChangedFiles(octokit, owner, repo, prNumber);
-      const matchedFileLabels = GetFileLabels(changedFiles, fileLabelMapping);
-      if (matchedFileLabels) {
-        for (const { label, description } of matchedFileLabels) {
-          labels.push(label);
+      const fileLabelMapping = parseConfigFile(prConfigPath);
+      const matchedLabels = getMatchedLabels(changedFiles, fileLabelMapping);
+      if (matchedLabels) {
+        for (const { label, description } of matchedLabels) {
+          labelsToApply.push(label);
           await ensureLabelExists(octokit, owner, repo, label, description);
         }
       } else {
-        labels.push("unknown");
-        await ensureLabelExists(octokit, owner, repo, "unknown", "No specific file-based label matched");
+        core2.warning("No labels matched the file changes in this pull request.");
       }
+    } else if (eventType === "issues" && context2.payload.issue) {
+      const issueNumber = context2.payload.issue.number;
+      targetNumber = issueNumber;
+      if (!issueConfigPath) {
+        core2.setFailed('Missing "issue-config" input for issue labeling.');
+        return;
+      }
+      const titleAndBody = [`${context2.payload.issue.title}`, `${context2.payload.issue.body || ""}`];
+      const issueLabelMapping = parseConfigFile(issueConfigPath);
+      const matchedLabels = getMatchedLabels(titleAndBody, issueLabelMapping);
+      if (matchedLabels) {
+        for (const { label, description } of matchedLabels) {
+          labelsToApply.push(label);
+          await ensureLabelExists(octokit, owner, repo, label, description);
+        }
+      } else {
+        core2.warning("No labels matched the issue title or body.");
+      }
+    } else {
+      core2.warning(`Event type "${eventType}" is not supported.`);
     }
-    if (context2.payload.pull_request?.number && labels.length > 0) {
+    if (targetNumber && labelsToApply.length > 0) {
       await octokit.rest.issues.addLabels({
         owner,
         repo,
-        issue_number: context2.payload.pull_request.number,
-        labels
+        issue_number: targetNumber,
+        labels: labelsToApply
       });
+      core2.info(`Labels applied: ${labelsToApply.join(", ")}`);
     } else {
-      core2.warning("No pull request found in the context.");
+      core2.warning("No labels were applied.");
     }
     console.log(`
             ---------------------------------------------------------------------
@@ -28741,9 +28765,10 @@ function getRandomColor() {
             Thank you for using this action! \u2013 Vedansh \u2728 (offensive-vk)
             ---------------------------------------------------------------------
         `);
-  } catch (error2) {
-    console.dir(error2);
-    core2.setFailed(`Failed to label PR based on file changes: ${error2.message}`);
+  } catch (error) {
+    console.dir(error);
+    core2.setFailed(`Failed to label PR based on file changes: 
+ ${error.message}`);
   }
 })();
 /*! Bundled license information:
