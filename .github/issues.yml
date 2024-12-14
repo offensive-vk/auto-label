@@ -17,3 +17,9 @@ feat:
   - feature
   - feat
   - oi
+
+base:
+  - base
+  - root
+  - this
+  - testing

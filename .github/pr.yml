@@ -3,6 +3,8 @@ kind/enhancement:
   - 'action.yml'
   - '.github'
   - '**/*.yml'
+
+kind/typescript:
   - '**/*.ts'
   - '**/*.js' 
 
