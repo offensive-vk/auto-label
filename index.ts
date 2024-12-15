@@ -22,7 +22,6 @@ interface LabelConfig {
     description?: string;
 }
 
-
 async function getChangedFiles(octokit: any, owner: string, repo: string, prNumber: number): Promise<string[]> {
     const { data: files } = await octokit.rest.pulls.listFiles({
         owner,
@@ -96,9 +95,9 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
 
 (async () => {
     try {
-        const token = core.getInput('github-token', { required: true });
+        const token = core.getInput('github-token');
         const octokit = github.getOctokit(token);
-
+        
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
@@ -109,7 +108,7 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
         const eventType = context.eventName;
         const labelsToApply: string[] = [];
         let targetNumber;
-
+        
         if (eventType === 'pull_request' && context.payload.pull_request) {
             const prNumber = context.payload.pull_request.number;
             targetNumber = prNumber;
@@ -155,7 +154,7 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
             }
 
         } else {
-            core.warning(`Event type "${eventType}" is not supported.`);
+            core.warning(`Event Type "${eventType}" is not supported.`);
         }
 
         if (targetNumber && labelsToApply.length > 0) {
@@ -165,20 +164,20 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
                 issue_number: targetNumber,
                 labels: labelsToApply,
             });
-            core.info(`Labels applied: ${labelsToApply.join(', ')}`);
+            core.info(`Issue Labels Applied: ${labelsToApply.join(', ')}`);
         } else {
             core.warning('No labels were applied.');
         }
 
         console.log(`
-            ---------------------------------------------------------------------
+            --------------------------------------------------------------
             🎉 Success! Labels have been applied to the Issue/PR.
             Thank you for using this action! – Vedansh ✨ (offensive-vk)
-            ---------------------------------------------------------------------
+            --------------------------------------------------------------
         `);
 
     } catch (error: any) {
         console.dir(error);
-        core.setFailed(`Failed to label PR based on file changes: \n ${error.message}`);
+        core.setFailed(`Failed to label PR based on file changes: \n${error.message}`);
     }
 })();
