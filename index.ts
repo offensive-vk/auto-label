@@ -108,7 +108,7 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
     try {
         const token = core.getInput('github-token');
         const octokit = github.getOctokit(token);
-        const debugMode = core.getBooleanInput('debug', { required: false }) || false;
+        const debugMode = core.getInput('debug') || false;
 
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
