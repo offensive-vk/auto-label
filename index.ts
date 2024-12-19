@@ -13,7 +13,7 @@ import * as github from '@actions/github';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import { minimatch } from 'minimatch';
- 
+
 const context = github.context;
 
 interface LabelConfig {
@@ -28,7 +28,9 @@ async function getChangedFiles(octokit: any, owner: string, repo: string, prNumb
         repo,
         pull_number: prNumber,
     });
-    return files.map((file: any) => file.filename);
+    const filenames = files.map((file: any) => file.filename);
+    core.debug(`Changed files: ${filenames.join(', ')}`);
+    return filenames;
 }
 
 function parseConfigFile(filePath: string): Array<LabelConfig> {
@@ -97,6 +99,7 @@ function getRandomColor() {
 function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels: Array<T>): Array<{ label: string; description?: string }> | undefined {
     const matchedLabels: Array<{ label: string; description?: string }> = [];
     labels.forEach(({ label, match, description }) => {
+        core.debug(`Checking label "${label}" with patterns: ${match.join(', ')}`);
         if (match.some(pattern => content.some(item => minimatch(item, pattern)))) {
             matchedLabels.push({ label, description });
         }
