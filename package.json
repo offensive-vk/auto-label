@@ -3,6 +3,7 @@
 	"version": "7.0.0",
 	"description": "Automatically Apply Labels on Issues and PRs using Octokit API.",
 	"main": "index.ts",
+	"type": "module",
 	"scripts": {
 		"build": "esbuild index.ts --bundle --outfile=dist/index.js --platform=node --sourcemap --minify"
 	},
@@ -20,6 +21,7 @@
 		"@actions/core": "^1.10.1",
 		"@actions/exec": "^1.1.1",
 		"@actions/github": "^5.1.1",
+		"@octokit/rest": "^21.0.2",
 		"js-yaml": "^4.1.0",
 		"minimatch": "^10.0.1",
 		"override.ps1": "^4.0.0",
