@@ -120,8 +120,8 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
 
-        const prConfigPath = core.getInput('pr-config');
-        const issueConfigPath = core.getInput('issue-config');
+        const prConfigPath = core.getInput('pr-config') || 'pr.yml';
+        const issueConfigPath = core.getInput('issue-config') || 'issues.yml';
 
         const eventType = context.eventName;
         const labelsToApply: string[] = [];
@@ -189,7 +189,7 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
 
         console.log(`
             --------------------------------------------------------------
-            🎉 Success! Labels have been applied to the Issue/PR.
+            🎉 Success! Labels have been applied to Issue/PR.
             Thank you for using this action! – Vedansh ✨ (offensive-vk)
             --------------------------------------------------------------
         `);
