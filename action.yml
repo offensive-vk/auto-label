@@ -5,6 +5,9 @@ branding:
   icon: mail
   color: gray-dark
 inputs:
+  number:
+    description: "Works on a specific issue or pr number."
+    required: false
   debug:
     required: false
     description: "Whether to enable Debug Mode or not."
