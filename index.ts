@@ -124,8 +124,8 @@ function resolvePath (path: string) {
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
 
-        const prConfigPath = resolvePath(core.getInput('pr-config') || 'pr.yml');
-        const issueConfigPath = resolvePath(core.getInput('issue-config') || 'issues.yml');
+        const prConfigPath = resolvePath(core.getInput('pr-config') || '.github/pr.yml');
+        const issueConfigPath = resolvePath(core.getInput('issue-config') || '.github/issues.yml');
 
         if (debugMode) {
             core.info(`PR Config Path: ${prConfigPath}`);
