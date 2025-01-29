@@ -40,7 +40,7 @@ jobs:
       if: github.event_name == 'issues'
       uses: ./
       with:
-        debug: false
+        debug: true
         create-labels: true
         github-token: ${{ secrets.BOT_TOKEN || secrets.MY_TOKEN }}
         issue-config: '.github/issues.yml'

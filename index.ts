@@ -99,7 +99,8 @@ function getRandomColor() {
     return color.slice(1);
 }
 
-function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels: Array<T>): Array<{ label: string; description?: string }> | undefined {
+function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels: Array<T>): 
+    Array<{ label: string; description?: string }> | undefined {
     const matchedLabels: Array<{ label: string; description?: string }> = [];
     labels.forEach(({ label, match, description }) => {
         core.debug(`Checking label "${label}" with patterns: ${match.join(', ')}`);
@@ -123,7 +124,7 @@ function resolvePath (path: string) {
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
-
+        const actionNumber = core.getInput('number') || undefined;
         const prConfigPath = resolvePath(core.getInput('pr-config') || '.github/pr.yml');
         const issueConfigPath = resolvePath(core.getInput('issue-config') || '.github/issues.yml');
 
@@ -180,6 +181,48 @@ function resolvePath (path: string) {
                 core.warning('No labels matched the issue title or body.');
             }
 
+        } else if (eventType == 'workflow_dispatch' && actionNumber != 'undefined') {
+            targetNumber = actionNumber as unknown as number;
+            
+            if (context.payload.issue) {
+                if (!issueConfigPath) {
+                    core.setFailed('Missing "issue-config" input for issue labeling.');
+                    return;
+                }
+    
+                const titleAndBody = [`${context.payload.issue.title}`, `${context.payload.issue.body || ''}`];
+                const issueLabelMapping = parseConfigFile(issueConfigPath);
+    
+                const matchedLabels = getMatchedLabels(titleAndBody, issueLabelMapping);
+                if (matchedLabels) {
+                    for (const { label, description } of matchedLabels) {
+                        labelsToApply.push(label);
+                        await ensureLabelExists(octokit, owner, repo, label, description);
+                    }
+                } else {
+                    core.warning('No labels matched the issue title or body.');
+                }
+            }
+
+            if (context.payload.pull_request) {
+                if (!prConfigPath) {
+                    core.setFailed('Missing "pr-config" input for pull request labeling.');
+                    return;
+                }
+    
+                const changedFiles = await getChangedFiles(octokit as unknown as Octokit, owner, repo, targetNumber);
+                const fileLabelMapping = parseConfigFile(prConfigPath);
+    
+                const matchedLabels = getMatchedLabels(changedFiles, fileLabelMapping);
+                if (matchedLabels) {
+                    for (const { label, description } of matchedLabels) {
+                        labelsToApply.push(label);
+                        await ensureLabelsExist(octokit, owner, repo, [{label: label, description: description}]);
+                    }
+                } else {
+                    core.warning('No labels matched the file changes in this pull request.');
+                }
+            }
         } else {
             core.warning(`Event Type "${eventType}" is not supported.`);
         }
@@ -199,7 +242,7 @@ function resolvePath (path: string) {
         console.log(`
             --------------------------------------------------------------
             🎉 Success! Labels have been applied to Issue/PR.
-            Thank you for using this action! – Vedansh ✨ (offensive-vk)
+            ✨ Thank you for using this action! – Vedansh
             --------------------------------------------------------------
         `);
 
