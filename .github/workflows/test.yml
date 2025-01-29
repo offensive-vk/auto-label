@@ -9,7 +9,7 @@ on:
     inputs:
       number:
         required: true
-        type: number
+        type: string
         default: "10"
         description: "PR/Issue Number to Run Workflow on."
 
@@ -42,7 +42,7 @@ jobs:
       with:
         debug: true
         create-labels: true
-        github-token: ${{ secrets.BOT_TOKEN || secrets.MY_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN || secrets.BOT_TOKEN }}
         issue-config: '.github/issues.yml'
 
     - name: Label Pull Requests
@@ -51,8 +51,19 @@ jobs:
       with:
         debug: true
         create-labels: true
-        github-token: ${{ secrets.BOT_TOKEN || secrets.MY_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN || secrets.BOT_TOKEN }}
         pr-config: '.github/pr.yml'
-
+        
+    - name: Manual Dispatch
+      if: github.event_name == 'workflow_dispatch'
+      uses: ./
+      with:
+        debug: true
+        create-labels: true
+        github-token: ${{ secrets.GITHUB_TOKEN || secrets.BOT_TOKEN }}
+        pr-config: '.github/pr.yml'
+        issue-config: '.github/issues.yml'
+        number: ${{ github.event.inputs.number }}
+        
     - name: Debug Event Context
       run: echo "${{ toJSON(github.event) }}"
