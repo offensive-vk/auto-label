@@ -75,7 +75,7 @@ async function ensureLabelExists(octokit: any, owner: string, repo: string, labe
     } catch (error: any) {
         if (error.status === 404) {
             const randomColor = getRandomColor();
-            core.info(`Label "${label}" not found. Creating it with color #${randomColor} and description "${description}".`);
+            core.info(`Label "${label}" not found. Creating it with color #${randomColor}.`);
             await octokit.rest.issues.createLabel({
                 owner,
                 repo,
@@ -117,9 +117,9 @@ function resolvePath (path: string) {
 
 (async () => {
     try {
-        const token = core.getInput('github-token');
+        const token = core.getInput('github-token') || process.env.GITHUB_TOKEN || '';
         const octokit = github.getOctokit(token);
-        const debugMode = core.getBooleanInput('debug');
+        const debugMode = core.getBooleanInput('debug') || true;
 
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
@@ -129,8 +129,8 @@ function resolvePath (path: string) {
         const issueConfigPath = resolvePath(core.getInput('issue-config') || '.github/issues.yml');
 
         if (debugMode) {
-            core.info(`PR Config Path: ${prConfigPath}`);
-            core.info(`Issue Config Path: ${issueConfigPath}`);
+            core.debug(`PR Config Path: ${prConfigPath}`);
+            core.debug(`Issue Config Path: ${issueConfigPath}`);
         }
 
         const eventType = context.eventName;

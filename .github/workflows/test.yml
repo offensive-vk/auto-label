@@ -11,7 +11,7 @@ on:
         required: true
         type: string
         default: "10"
-        description: "PR/Issue Number to Run Workflow on."
+        description: "PR/Issue Number to Run / Test Workflow on."
 
 permissions:
   pull-requests: write
@@ -42,7 +42,7 @@ jobs:
       with:
         debug: true
         create-labels: true
-        github-token: ${{ secrets.GITHUB_TOKEN || secrets.BOT_TOKEN }}
+        github-token: ${{ secrets.MY_PAT || github.token }}
         issue-config: '.github/issues.yml'
 
     - name: Label Pull Requests
@@ -51,7 +51,7 @@ jobs:
       with:
         debug: true
         create-labels: true
-        github-token: ${{ secrets.GITHUB_TOKEN || secrets.BOT_TOKEN }}
+        github-token: ${{ secrets.MY_PAT || github.token }}
         pr-config: '.github/pr.yml'
         
     - name: Manual Dispatch
@@ -60,7 +60,7 @@ jobs:
       with:
         debug: true
         create-labels: true
-        github-token: ${{ secrets.GITHUB_TOKEN || secrets.BOT_TOKEN }}
+        github-token: ${{ secrets.MY_PAT || github.token }}
         pr-config: '.github/pr.yml'
         issue-config: '.github/issues.yml'
         number: ${{ github.event.inputs.number }}
