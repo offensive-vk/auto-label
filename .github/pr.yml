@@ -4,7 +4,6 @@ kind/enhancement:
 
 kind/typescript:
   - '**/*.ts'
-  - '**/*.js' 
 
 kind/ci:
   - '**/*.yml'
@@ -17,3 +16,7 @@ bot/hamster:
 kind/dotfiles:
   - '**/*.json'
   - '**/*.md'
+
+kind/testing:
+  - '**/*.js.map'
+  - '**/*.js'
