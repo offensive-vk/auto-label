@@ -203,6 +203,8 @@ function resolvePath (path: string) {
             console.dir(issueLabelMapping);
 
             const matchedLabels = getMatchedLabels(titleAndBody, issueLabelMapping);
+            console.dir(matchedLabels);
+
             if (matchedLabels) {
                 console.dir(matchedLabels);
                 for (const { label, description } of matchedLabels) {
