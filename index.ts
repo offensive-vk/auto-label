@@ -171,7 +171,8 @@ function resolvePath (path: string) {
             const titleAndBody = [`${context.payload.issue.title}`, `${context.payload.issue.body || ''}`];
             core.info(`Issue Data: \n ${titleAndBody}\n`);
             const issueLabelMapping = parseConfigFile(issueConfigPath);
-            core.info(`Issue Label Mapping: \n${issueLabelMapping}\n`)
+            core.info(`Issue Label Mapping:\n`);
+            console.dir(issueLabelMapping);
 
             const matchedLabels = getMatchedLabels(titleAndBody, issueLabelMapping);
             if (matchedLabels) {
