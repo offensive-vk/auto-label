@@ -109,7 +109,7 @@ function getRandomColor() {
 
 
 function findMatchingLabels(body: string, labelConfig: LabelConfig[]): MatchedLabels {
-    const content = body.toLowerCase().split(/\s+/);
+    const content = body.replace(/[^a-zA-Z0-9]/g, ' ').toLowerCase().split(/\s+/);
     const matchedLabels: MatchedLabels = [];
 
     for (const { label, match, description } of labelConfig) {
@@ -125,7 +125,7 @@ function findMatchingLabels(body: string, labelConfig: LabelConfig[]): MatchedLa
 }
 
 function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels: Array<T>): 
-    Array<{ label: string; description?: string }> | undefined {
+    MatchedLabels {
     const matchedLabels: MatchedLabels = [];
     labels.forEach(({ label, match, description }) => {
         core.debug(`Checking label "${label}" with patterns: ${match.join(', ')}`);
@@ -133,7 +133,7 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
             matchedLabels.push({ label, description });
         }
     });
-    return matchedLabels.length > 0 ? matchedLabels : undefined;
+    return matchedLabels.length > 0 ? matchedLabels : [];
 }
 
 function resolvePath (path: string) {
@@ -145,7 +145,6 @@ function resolvePath (path: string) {
         const token = core.getInput('github-token') || process.env.GITHUB_TOKEN || '';
         const octokit = github.getOctokit(token);
         const debugMode = core.getBooleanInput('debug') || true;
-
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
@@ -159,7 +158,7 @@ function resolvePath (path: string) {
         }
 
         const eventType = context.eventName;
-        const labelsToApply: string[] = [];
+        const labelsToApply = [];
         let targetNumber;
 
         if (eventType === 'pull_request' && context.payload.pull_request) {
@@ -192,12 +191,9 @@ function resolvePath (path: string) {
                 core.setFailed('Missing "issue-config" input for issue labeling.');
                 return;
             }
-            core.info(`Found Issue Config File: ${issueConfigPath}`)
+
             const titleAndBody = `${context.payload.issue.title} ${context.payload.issue.body || ''}`;
-            core.info(`Issue Data: \n${titleAndBody}\n`);
             const issueLabelMapping = parseConfigFile(issueConfigPath);
-            core.info(`Issue Label Mapping:\n`);
-            console.dir(issueLabelMapping);
 
             const matchedLabels = findMatchingLabels(titleAndBody, issueLabelMapping);
             console.dir(matchedLabels);
@@ -214,7 +210,6 @@ function resolvePath (path: string) {
 
         } else if (eventType == 'workflow_dispatch' && actionNumber != 'undefined') {
             targetNumber = actionNumber as unknown as number;
-            
             core.warning(`Workflow dispatch event is still under development. - ${targetNumber}`)
         } else {
             core.warning(`Event Type "${eventType}" is not supported.`);
@@ -222,8 +217,8 @@ function resolvePath (path: string) {
 
         if (targetNumber && labelsToApply.length > 0) {
             await octokit.rest.issues.addLabels({
-                owner,
-                repo,
+                owner: contextOwner,
+                repo: contextRepo,
                 issue_number: targetNumber,
                 labels: labelsToApply,
             });
@@ -233,14 +228,15 @@ function resolvePath (path: string) {
         }
 
         console.log(`
-            --------------------------------------------------------------
+            -------------------------------------------------
             🎉 Success! Labels have been applied to Issue/PR.
             ✨ Thank you for using this action! – Vedansh
-            --------------------------------------------------------------
+            -------------------------------------------------
         `);
 
     } catch (error: any) {
         core.error(`Error: ${error.message}`);
-        core.setFailed(`Failed to label PR based on file changes: \n${error.message}`);
+        core.debug(`Debug Info: ${JSON.stringify(error, null, 2)}`);
+        core.setFailed(`Something went wrong in here. Kindly check the detailed logs.`)
     }
 })();
