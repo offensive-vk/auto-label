@@ -20,20 +20,20 @@ documentation:
     - "readme"
   description: "Related to documentation updates or changes."
 
-hamster:
-  - "automated"
-  - "hamster"
+# hamster:
+#   - "automated"
+#   - "hamster"
 
-issue:
-  - "issue"
-  - "issues"
-  - "bug"
+# issue:
+#   - "issue"
+#   - "issues"
+#   - "bug"
 
-feat:
-  - "feature"
-  - "feat"
-  - "oi"
+# feat:
+#   - "feature"
+#   - "feat"
+#   - "oi"
 
-base:
-  - "this"
-  - "testing"
+# base:
+#   - "this"
+#   - "testing"
