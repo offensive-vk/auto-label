@@ -14,6 +14,7 @@ import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import { minimatch } from 'minimatch';
 import { Octokit } from '@octokit/rest';
+import { constrainedMemory } from 'process';
 
 const context = github.context;
 
@@ -196,14 +197,16 @@ function resolvePath (path: string) {
             }
             core.info(`Found Issue Config File: ${issueConfigPath}`)
             const titleAndBody = [`${context.payload.issue.title}`, `${context.payload.issue.body || ''}`];
-            core.info(`Issue Data: \n ${titleAndBody}\n`);
+            core.info(`Issue Data: \n${titleAndBody}\n`);
             const issueLabelMapping = parseConfigFile(issueConfigPath);
             core.info(`Issue Label Mapping:\n`);
             console.dir(issueLabelMapping);
 
             const matchedLabels = getMatchedLabels(titleAndBody, issueLabelMapping);
             if (matchedLabels) {
+                console.dir(matchedLabels);
                 for (const { label, description } of matchedLabels) {
+                    core.info(`Matching label ${label} with description ${description}`);
                     labelsToApply.push(label);
                     await ensureLabelExists(octokit, owner, repo, label, description);
                 }
@@ -214,45 +217,7 @@ function resolvePath (path: string) {
         } else if (eventType == 'workflow_dispatch' && actionNumber != 'undefined') {
             targetNumber = actionNumber as unknown as number;
             
-            if (context.payload.issue) {
-                if (!issueConfigPath) {
-                    core.setFailed('Missing "issue-config" input for issue labeling.');
-                    return;
-                }
-    
-                const titleAndBody = [`${context.payload.issue.title}`, `${context.payload.issue.body || ''}`];
-                const issueLabelMapping = parseConfigFile(issueConfigPath);
-    
-                const matchedLabels = getMatchedLabels(titleAndBody, issueLabelMapping);
-                if (matchedLabels) {
-                    for (const { label, description } of matchedLabels) {
-                        labelsToApply.push(label);
-                        await ensureLabelExists(octokit, owner, repo, label, description);
-                    }
-                } else {
-                    core.warning('No labels matched the issue title or body.');
-                }
-            }
-
-            if (context.payload.pull_request) {
-                if (!prConfigPath) {
-                    core.setFailed('Missing "pr-config" input for pull request labeling.');
-                    return;
-                }
-    
-                const changedFiles = await getChangedFiles(octokit as unknown as Octokit, owner, repo, targetNumber);
-                const fileLabelMapping = parseConfigFile(prConfigPath);
-    
-                const matchedLabels = getMatchedLabels(changedFiles, fileLabelMapping);
-                if (matchedLabels) {
-                    for (const { label, description } of matchedLabels) {
-                        labelsToApply.push(label);
-                        await ensureLabelsExist(octokit, owner, repo, [{label: label, description: description}]);
-                    }
-                } else {
-                    core.warning('No labels matched the file changes in this pull request.');
-                }
-            }
+            core.warning(`Workflow dispatch event is still under development. - ${targetNumber}`)
         } else {
             core.warning(`Event Type "${eventType}" is not supported.`);
         }
