@@ -36,26 +36,53 @@ async function getChangedFiles(octokit: Octokit, owner: string, repo: string, pr
 
 function parseConfigFile(filePath: string): Array<LabelConfig> {
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    let parsedData;
+    let parsedData: Record<string, { match: string[]; description?: string }>;
+
     if (filePath.endsWith('.yml') || filePath.endsWith('.yaml')) {
-        parsedData = yaml.load(fileContent);
+        parsedData = yaml.load(fileContent) as Record<string, { match: string[]; description?: string }>;
     } else if (filePath.endsWith('.json')) {
-        parsedData = JSON.parse(fileContent);
+        parsedData = JSON.parse(fileContent) as Record<string, { match: string[]; description?: string }>;
     } else {
         throw new Error(`Unsupported file type: ${filePath}`);
     }
 
     if (typeof parsedData === 'object' && parsedData !== null) {
-        return Object.entries(parsedData).map(([label, patterns]) => {
-            if (!Array.isArray(patterns)) {
-                throw new Error(`Patterns for label "${label}" should be an array.`);
+        return Object.entries(parsedData).map(([label, config]) => {
+            if (!Array.isArray(config.match)) {
+                throw new Error(`Invalid configuration for label "${label}".`);
             }
-            return { label, match: patterns as string[] };
+            return {
+                label,
+                match: config.match,
+                description: config.description || undefined,
+            };
         });
     } else {
         throw new Error(`Parsed data from ${filePath} is not an object or is empty.`);
     }
 }
+// function parseConfigFile(filePath: string): Array<LabelConfig> {
+//     const fileContent = fs.readFileSync(filePath, 'utf8');
+//     let parsedData;
+//     if (filePath.endsWith('.yml') || filePath.endsWith('.yaml')) {
+//         parsedData = yaml.load(fileContent);
+//     } else if (filePath.endsWith('.json')) {
+//         parsedData = JSON.parse(fileContent);
+//     } else {
+//         throw new Error(`Unsupported file type: ${filePath}`);
+//     }
+
+//     if (typeof parsedData === 'object' && parsedData !== null) {
+//         return Object.entries(parsedData).map(([label, patterns]) => {
+//             if (!Array.isArray(patterns)) {
+//                 throw new Error(`Patterns for label "${label}" should be an array.`);
+//             }
+//             return { label, match: patterns as string[] };
+//         });
+//     } else {
+//         throw new Error(`Parsed data from ${filePath} is not an object or is empty.`);
+//     }
+// }
 async function ensureLabelsExist(
     octokit: any,
     owner: string,
