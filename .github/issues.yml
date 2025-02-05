@@ -19,3 +19,11 @@ documentation:
     - "documentation"
     - "readme"
   description: "Related to documentation updates or changes."
+
+hamster:
+  match:
+    - 'pet'
+    - 'animal'
+    - 'automated'
+    - 'hamster'
+  description: "Thats my hamster."
