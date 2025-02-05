@@ -1,25 +1,33 @@
+bug:
+  - "error"
+  - "fail"
+  - "bug"
+  - "crash"
+
+enhancement:
+  - "feature"
+  - "enhancement"
+  - "improvement"
+
+documentation:
+  - "doc"
+  - "documentation"
+  - "readme"
+
 hamster:
-  - automated
-  - hamster
-  - hamsters
-  - hamster-bot
-  - hamster-bots
-  - Hamster
+  - "automated"
+  - "hamster"
 
 issue:
-  - issue
-  - issues
-  - bug
-  - bugs
-  - fix
+  - "issue"
+  - "issues"
+  - "bug"
 
 feat:
-  - feature
-  - feat
-  - oi
+  - "feature"
+  - "feat"
+  - "oi"
 
 base:
-  - 'base'
-  - 'root'
-  - 'this'
-  - 'testing'
+  - "this
+  - "testing"

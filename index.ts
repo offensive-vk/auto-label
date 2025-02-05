@@ -167,9 +167,11 @@ function resolvePath (path: string) {
                 core.setFailed('Missing "issue-config" input for issue labeling.');
                 return;
             }
-
+            core.info(`Found Issue Config File: ${issueConfigPath}`)
             const titleAndBody = [`${context.payload.issue.title}`, `${context.payload.issue.body || ''}`];
+            core.info(`Issue Data: \n ${titleAndBody}\n`);
             const issueLabelMapping = parseConfigFile(issueConfigPath);
+            core.info(`Issue Label Mapping: \n${issueLabelMapping}\n`)
 
             const matchedLabels = getMatchedLabels(titleAndBody, issueLabelMapping);
             if (matchedLabels) {
