@@ -14,7 +14,6 @@ import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import { minimatch } from 'minimatch';
 import { Octokit } from '@octokit/rest';
-import { constrainedMemory } from 'process';
 
 const context = github.context;
 
@@ -23,6 +22,8 @@ interface LabelConfig {
     match: Array<string>;
     description?: string;
 }
+
+type MatchedLabels = Array<{ label: string , description?: string}>;
 
 async function getChangedFiles(octokit: Octokit, owner: string, repo: string, prNumber: number): Promise<string[]> {
     const { data: files } = await octokit.rest.pulls.listFiles({
@@ -62,28 +63,7 @@ function parseConfigFile(filePath: string): Array<LabelConfig> {
         throw new Error(`Parsed data from ${filePath} is not an object or is empty.`);
     }
 }
-// function parseConfigFile(filePath: string): Array<LabelConfig> {
-//     const fileContent = fs.readFileSync(filePath, 'utf8');
-//     let parsedData;
-//     if (filePath.endsWith('.yml') || filePath.endsWith('.yaml')) {
-//         parsedData = yaml.load(fileContent);
-//     } else if (filePath.endsWith('.json')) {
-//         parsedData = JSON.parse(fileContent);
-//     } else {
-//         throw new Error(`Unsupported file type: ${filePath}`);
-//     }
 
-//     if (typeof parsedData === 'object' && parsedData !== null) {
-//         return Object.entries(parsedData).map(([label, patterns]) => {
-//             if (!Array.isArray(patterns)) {
-//                 throw new Error(`Patterns for label "${label}" should be an array.`);
-//             }
-//             return { label, match: patterns as string[] };
-//         });
-//     } else {
-//         throw new Error(`Parsed data from ${filePath} is not an object or is empty.`);
-//     }
-// }
 async function ensureLabelsExist(
     octokit: any,
     owner: string,
@@ -127,9 +107,26 @@ function getRandomColor() {
     return color.slice(1);
 }
 
+
+function findMatchingLabels(body: string, labelConfig: LabelConfig[]): MatchedLabels {
+    const content = body.toLowerCase().split(/\s+/);
+    const matchedLabels: MatchedLabels = [];
+
+    for (const { label, match, description } of labelConfig) {
+        for (const word of content) {
+            if (match.some(pattern => minimatch(word, pattern))) {
+                matchedLabels.push({ label, description });
+                break; // Avoid duplicate entries
+            }
+        }
+    }
+
+    return matchedLabels;
+}
+
 function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels: Array<T>): 
     Array<{ label: string; description?: string }> | undefined {
-    const matchedLabels: Array<{ label: string; description?: string }> = [];
+    const matchedLabels: MatchedLabels = [];
     labels.forEach(({ label, match, description }) => {
         core.debug(`Checking label "${label}" with patterns: ${match.join(', ')}`);
         if (match.some(pattern => content.some(item => minimatch(item, pattern)))) {
@@ -196,17 +193,16 @@ function resolvePath (path: string) {
                 return;
             }
             core.info(`Found Issue Config File: ${issueConfigPath}`)
-            const titleAndBody = [`${context.payload.issue.title}`, `${context.payload.issue.body || ''}`];
+            const titleAndBody = `${context.payload.issue.title} ${context.payload.issue.body || ''}`;
             core.info(`Issue Data: \n${titleAndBody}\n`);
             const issueLabelMapping = parseConfigFile(issueConfigPath);
             core.info(`Issue Label Mapping:\n`);
             console.dir(issueLabelMapping);
 
-            const matchedLabels = getMatchedLabels(titleAndBody, issueLabelMapping);
+            const matchedLabels = findMatchingLabels(titleAndBody, issueLabelMapping);
             console.dir(matchedLabels);
 
             if (matchedLabels) {
-                console.dir(matchedLabels);
                 for (const { label, description } of matchedLabels) {
                     core.info(`Matching label ${label} with description ${description}`);
                     labelsToApply.push(label);
