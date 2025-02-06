@@ -17,13 +17,42 @@ import { Octokit } from '@octokit/rest';
 
 const context = github.context;
 
+/**
+ * @interface LabelConfig Schema for Proper API Usage.
+ */
 interface LabelConfig {
     label: string;
     match: Array<string>;
     description?: string;
 }
-
+/**
+ * @type MatchedLabels for Array that contains matched labels with pattern.
+ */
 type MatchedLabels = Array<{ label: string , description?: string}>;
+
+/**
+ * Replaces environment variable placeholders in a given path with their actual values.
+ * 
+ * @param path - The path containing placeholders in the format $VARIABLE_NAME.
+ * @returns The path with placeholders replaced by environment variable values.
+ */
+function resolvePath (path: string) {
+    return path.replace(/\$([A-Z_]+)/g, (_, name) => process.env[name] || '');
+};
+
+/**
+ * Generates a random hexadecimal color code.
+ * 
+ * @returns A string representing a random color in hexadecimal format (e.g., '1A2B3C').
+ */
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color.slice(1);
+}
 
 async function getChangedFiles(octokit: Octokit, owner: string, repo: string, prNumber: number): Promise<string[]> {
     const { data: files } = await octokit.rest.pulls.listFiles({
@@ -98,16 +127,6 @@ async function ensureLabelExists(octokit: any, owner: string, repo: string, labe
     }
 }
 
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color.slice(1);
-}
-
-
 function findMatchingLabels(body: string, labelConfig: LabelConfig[]): MatchedLabels {
     const content = body.replace(/[^a-zA-Z0-9]/g, ' ').toLowerCase().split(/\s+/);
     const matchedLabels: MatchedLabels = [];
@@ -135,10 +154,6 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
     });
     return matchedLabels.length > 0 ? matchedLabels : [];
 }
-
-function resolvePath (path: string) {
-    return path.replace(/\$([A-Z_]+)/g, (_, name) => process.env[name] || '');
-};
 
 (async () => {
     try {
