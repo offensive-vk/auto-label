@@ -161,8 +161,8 @@ function resolvePath (path: string) {
         const labelsToApply = [];
         let targetNumber;
 
-        if (eventType === 'pull_request' && context.payload.pull_request) {
-            const prNumber = context.payload.pull_request.number;
+        if (eventType === 'pull_request_target' && context.payload.pull_request_target) {
+            const prNumber = context.payload.pull_request_target.number;
             targetNumber = prNumber;
 
             if (!prConfigPath) {
