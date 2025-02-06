@@ -3,7 +3,7 @@ name: CI / Test Action
 on: 
   issues:
     types: [opened, edited]
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize]
   workflow_dispatch:
     inputs:
@@ -46,7 +46,7 @@ jobs:
         issue-config: '.github/issues.yml'
 
     - name: Label Pull Requests
-      if: github.event_name == 'pull_request_target'
+      if: github.event_name == 'pull_request'
       uses: ./
       with:
         debug: true
