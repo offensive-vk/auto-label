@@ -142,7 +142,7 @@ function resolvePath (path: string) {
 
 (async () => {
     try {
-        const token = core.getInput('auth-token') || process.env.GITHUB_TOKEN || '';
+        const token = core.getInput('auth-token');
         const octokit = github.getOctokit(token);
         const debugMode = core.getBooleanInput('debug') || false;
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
@@ -225,6 +225,13 @@ function resolvePath (path: string) {
                 issue_number: targetNumber,
                 labels: labelsToApply,
             });
+
+            await octokit.rest.issues.setLabels({
+                issue_number: targetNumber,
+                owner: contextOwner,
+                repo: contextRepo,
+                labels: labelsToApply
+            })
             core.info(`Issue Labels Applied: ${labelsToApply.join(', ')}`);
         } else {
             core.warning('No labels were applied.');
