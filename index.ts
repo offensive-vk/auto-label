@@ -142,9 +142,9 @@ function resolvePath (path: string) {
 
 (async () => {
     try {
-        const token = core.getInput('github-token') || process.env.GITHUB_TOKEN || '';
+        const token = core.getInput('auth-token') || process.env.GITHUB_TOKEN || '';
         const octokit = github.getOctokit(token);
-        const debugMode = core.getBooleanInput('debug') || true;
+        const debugMode = core.getBooleanInput('debug') || false;
         const { owner: contextOwner, repo: contextRepo } = github.context.repo;
         const owner = core.getInput('owner') || contextOwner;
         const repo = core.getInput('repo') || contextRepo;
@@ -174,6 +174,8 @@ function resolvePath (path: string) {
             const fileLabelMapping = parseConfigFile(prConfigPath);
 
             const matchedLabels = getMatchedLabels(changedFiles, fileLabelMapping);
+            console.dir(matchedLabels);
+
             if (matchedLabels) {
                 for (const { label, description } of matchedLabels) {
                     labelsToApply.push(label);
@@ -236,7 +238,7 @@ function resolvePath (path: string) {
 
     } catch (error: any) {
         core.error(`Error: ${error.message}`);
-        core.debug(`Debug Info: ${JSON.stringify(error, null, 2)}`);
+        core.error(`Debug Info: ${JSON.stringify(error, null, 2)}`);
         core.setFailed(`Something went wrong in here. Kindly check the detailed logs.`)
     }
 })();

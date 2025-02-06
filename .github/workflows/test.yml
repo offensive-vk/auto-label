@@ -3,7 +3,7 @@ name: CI / Test Action
 on: 
   issues:
     types: [opened, edited]
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize]
   workflow_dispatch:
     inputs:
@@ -42,7 +42,7 @@ jobs:
       with:
         debug: true
         create-labels: true
-        github-token: ${{ secrets.MY_PAT || github.token }}
+        auth-token: ${{ github.token }}
         issue-config: '.github/issues.yml'
 
     - name: Label Pull Requests
@@ -51,7 +51,7 @@ jobs:
       with:
         debug: true
         create-labels: true
-        github-token: ${{ secrets.MY_PAT || github.token }}
+        auth-token: ${{ github.token }}
         pr-config: '.github/pr.yml'
         
     - name: Manual Dispatch
