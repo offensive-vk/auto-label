@@ -40,7 +40,6 @@ function resolvePath (path: string) {
 
 /**
  * Generates a random hexadecimal color code.
- * 
  * @returns A string representing a random color in hexadecimal format (e.g., '1A2B3C').
  */
 function getRandomColor() {
