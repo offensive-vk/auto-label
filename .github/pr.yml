@@ -38,4 +38,5 @@ kind/testing:
 kind/docs:
   match:
     - '**/*.md'
+    - 'LICENSE'
   description: "Documentation."
