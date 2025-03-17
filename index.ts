@@ -142,13 +142,20 @@ function findMatchingLabels(body: string, labelConfig: LabelConfig[]): MatchedLa
 function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels: Array<T>): 
     MatchedLabels {
     const matchedLabels: MatchedLabels = [];
-    labels.forEach(({ label, match, description }) => {
-        core.debug(`Checking label "${label}" with patterns: ${match.join(', ')}`);
-        if (match.some(pattern => content.some(item => minimatch(item, pattern)))) {
-            matchedLabels.push({ label, description });
-        }
+    
+    // Check each file against all label patterns
+    content.forEach(file => {
+        labels.forEach(({ label, match, description }) => {
+            core.debug(`Checking file "${file}" against label "${label}" with patterns: ${match.join(', ')}`);
+            // If this label hasn't been matched yet and the file matches any pattern
+            if (!matchedLabels.some(ml => ml.label === label) && 
+                match.some(pattern => minimatch(file, pattern))) {
+                matchedLabels.push({ label, description });
+            }
+        });
     });
-    return matchedLabels.length > 0 ? matchedLabels : [];
+    
+    return matchedLabels;
 }
 
 (async () => {
@@ -184,9 +191,12 @@ function getMatchedLabels<T extends LabelConfig>(content: Array<string>, labels:
             }
 
             const changedFiles = await getChangedFiles(octokit, owner, repo, prNumber);
+            core.debug(`Processing ${changedFiles.length} changed files`);
             const fileLabelMapping = parseConfigFile(prConfigPath);
+            core.debug(`Loaded ${fileLabelMapping.length} label configurations`);
 
             const matchedLabels = getMatchedLabels(changedFiles, fileLabelMapping);
+            core.info(`Found ${matchedLabels.length} matching labels`);
             console.dir(matchedLabels);
 
             if (matchedLabels) {
